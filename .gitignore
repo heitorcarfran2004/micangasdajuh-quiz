@@ -1,0 +1,5 @@
+node_modules/
+servidor.log
+# screenshots de conferência — começam com _ e nunca vão para o repo
+_*.png
+.url-no-ar

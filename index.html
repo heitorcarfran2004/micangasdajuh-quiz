@@ -77,7 +77,7 @@
 
   /* intro */
   .intro-img{border-radius:22px;overflow:hidden;margin:18px 0 18px;box-shadow:0 14px 34px -18px rgba(35,48,57,.45)}
-  .intro-img img{width:100%;height:clamp(230px,38vh,360px);object-fit:cover;object-position:50% 30%}
+  .intro-img img{width:100%;height:auto;aspect-ratio:1/1;object-fit:cover}
   .selos{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;color:var(--cinza);font-size:13.5px;margin-top:14px}
   .selos span{display:inline-flex;align-items:center;gap:5px}
 
@@ -341,7 +341,7 @@
     <span class="passo">Teste gratuito · 1 minuto</span>
     <h1>Você consegue fazer brincos de miçanga <span class="script cr">que parecem de loja?</span></h1>
     <p class="apoio">Responda 7 perguntas rápidas e descubra o seu perfil de artesã e qual brinco você deveria fazer primeiro.</p>
-    <div class="intro-img"><img src="assets/hero-700.webp" alt="Brincos de miçanga prontos ao lado do livro de projetos" width="700" height="700" fetchpriority="high"></div>
+    <div class="intro-img"><img src="assets/hero-quiz-720.webp" srcset="assets/hero-quiz-420.webp 420w, assets/hero-quiz-720.webp 720w" sizes="(max-width:520px) 92vw, 488px" alt="Mão segurando cinco pares de brincos de miçanga em cartões: arara, onça, tucano, borboleta e pavão" width="720" height="720" fetchpriority="high"></div>
     <button class="btn pulsa" data-ir="proxima">QUERO DESCOBRIR</button>
     <div class="selos"><span>✓ Gratuito</span><span>✓ Sem cadastro</span><span>✓ Resultado na hora</span></div>
   </section>

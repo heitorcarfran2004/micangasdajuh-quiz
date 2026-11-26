@@ -729,8 +729,57 @@
 
 
 <script>
+/* Rastreio do funil (26/11): manda cada tela, resposta, secao da TSL e clique no checkout para o Supabase
+   (tabela quiz_eventos, quiz = 'micangasdajuh'). O painel le so os agregados (funcao painel_micanga).
+   Nao guarda nome, e-mail nem nada pessoal. Nunca trava o quiz: tudo em try/catch, envio em segundo plano. */
+(function () {
+  var URL = 'https://pdsnjmdgvwfomuvbjtiw.supabase.co/rest/v1/quiz_eventos';
+  var KEY = 'sb_publishable_7-wFMFY5icwU7XqLuCvrNw_XiXVTbzn';
+  function gerar() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+  var sid; try { sid = sessionStorage.getItem('qz_sid') || gerar(); sessionStorage.setItem('qz_sid', sid); } catch (e) { sid = gerar(); }
+  var q = new URLSearchParams(location.search);
+  var base = {
+    quiz: 'micangasdajuh', sid: sid, variante: (q.get('v') || 'atual').slice(0, 20),
+    dispositivo: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'celular' : 'computador',
+    utm_source: q.get('utm_source'), utm_medium: q.get('utm_medium'), utm_campaign: q.get('utm_campaign'),
+    utm_content: q.get('utm_content'), utm_term: q.get('utm_term')
+  };
+  function corta(v, n) { return v == null ? null : String(v).slice(0, n); }
+  function enviar(ev) {
+    try {
+      var o = {}; for (var k in base) o[k] = corta(base[k], k.indexOf('utm') === 0 ? 300 : 40);
+      o.tipo = ev.tipo; o.etapa = corta(ev.etapa, 60); o.ordem = ev.ordem; o.resposta = corta(ev.resposta, 300);
+      o.ms = ev.ms == null ? null : Math.min(Math.round(ev.ms), 2000000000);
+      fetch(URL, { method: 'POST', keepalive: true, headers: { apikey: KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(o) }).catch(function () {});
+    } catch (e) {}
+  }
+  var atual = { ordem: 0, etapa: 'abertura', desde: Date.now() }, saiuDe = -1, tslDesde = 0;
+  enviar({ tipo: 'inicio', etapa: 'abertura', ordem: 0, resposta: document.referrer || '' });
+  window.__rastro = {
+    tela: function (ordem, etapa) {
+      if (ordem === atual.ordem) return;
+      var gasto = Date.now() - atual.desde;
+      atual = { ordem: ordem, etapa: etapa, desde: Date.now() };
+      if (etapa === 'resultado' && !tslDesde) tslDesde = Date.now();
+      enviar({ tipo: 'etapa', etapa: etapa, ordem: ordem, ms: gasto });
+    },
+    resposta: function (chave, valor) { enviar({ tipo: 'resposta', etapa: chave, ordem: atual.ordem, resposta: valor, ms: Date.now() - atual.desde }); },
+    secao: function (nome) { enviar({ tipo: 'secao', etapa: 'resultado', ordem: 99, resposta: nome, ms: tslDesde ? Date.now() - tslDesde : null }); },
+    checkout: function (plano) { enviar({ tipo: 'checkout', etapa: atual.etapa, ordem: atual.ordem, resposta: plano, ms: tslDesde ? Date.now() - tslDesde : null }); }
+  };
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden' && saiuDe !== atual.ordem) {
+      saiuDe = atual.ordem;
+      enviar({ tipo: 'saida', etapa: atual.etapa, ordem: atual.ordem, ms: Date.now() - atual.desde });
+    }
+  });
+})();
+</script>
+<script>
 (function () {
   var telas = [].slice.call(document.querySelectorAll('.tela'));
+  var ETAPA = ['abertura', 'experiencia', 'trava', 'objetivo', 'desenho', 'tempo', 'orcamento', 'aprender', 'nome', 'carrega', 'info1', 'info2', 'info3', 'resultado'];
+  function rastro(f) { try { if (window.__rastro) f(window.__rastro); } catch (e) {} }
   var atual = 0, hist = [0], resp = {}, nome = '';
   var prog = document.getElementById('prog'), voltar = document.getElementById('voltar');
   var totalQuiz = telas.length - 1;
@@ -746,6 +795,7 @@
     if (t === 'carrega') carregar();
     window.scrollTo(0, 0);
     try { if (window.fbq) fbq('trackCustom', 'QuizEtapa', { etapa: i, tipo: t }); } catch (e) {}
+    rastro(function (r) { r.tela(i, ETAPA[i] || ('tela' + i)); });
   }
   function proxima() { mostrar(atual + 1); }
 
@@ -762,6 +812,7 @@
         tela.querySelectorAll('.marcada').forEach(function (m) { m.classList.remove('marcada'); });
         op.classList.add('marcada');
         resp[tela.dataset.chave] = op.dataset.v;
+        rastro(function (r) { r.resposta(tela.dataset.chave, op.dataset.v); });
         setTimeout(proxima, 260);
       });
     });
@@ -769,7 +820,7 @@
 
   // nome
   var campo = document.getElementById('nome');
-  function irNome() { nome = (campo.value || '').trim().split(/\s+/)[0] || ''; if (nome) nome = nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase(); proxima(); }
+  function irNome() { nome = (campo.value || '').trim().split(/\s+/)[0] || ''; if (nome) nome = nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase(); rastro(function (r) { r.resposta('nome', nome ? 'preencheu' : 'pulou'); }); proxima(); }
   document.getElementById('btn-nome').addEventListener('click', irNome);
   document.getElementById('pular-nome').addEventListener('click', function () { campo.value = ''; irNome(); });
   campo.addEventListener('keydown', function (e) { if (e.key === 'Enter') irNome(); });
@@ -883,8 +934,31 @@
 
   // checkout nao dispara o back redirect
   document.querySelectorAll('a[href*="pay.wiapy.com"]').forEach(function (a) {
-    a.addEventListener('click', function () { window.__indoParaCheckout = true; });
+    a.addEventListener('click', function () {
+      window.__indoParaCheckout = true;
+      var plano = a.href.indexOf('ZWNeximymxS') > -1 ? 'essencial' : 'completo';
+      rastro(function (r) { r.checkout(plano); });
+    });
   });
+
+  // ate onde a pessoa rola na TSL: cada bloco que aparece na tela vira um evento (uma vez por bloco)
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+    var blocos = [['.resultado', 'resultado'], ['#c-abre', 'dores'], ['.cartao-mec', 'mecanismo'], ['.usos', 'desejo'], ['.stats', 'produto'],
+      ['#amostras', 'amostras'], ['.niveis', 'niveis'], ['.objecoes', 'objecoes'], ['.tags.canais', 'vender'], ['.bonus-lista', 'bonus'],
+      ['.planos', 'oferta'], ['.garantia', 'garantia'], ['.tsl details', 'faq'], ['.tsl footer', 'fim']];
+    var visto = {};
+    var obs = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        var nome = e.target.getAttribute('data-bloco');
+        if (e.isIntersecting && !visto[nome] && document.getElementById('tsl').classList.contains('ativa')) {
+          visto[nome] = 1; obs.unobserve(e.target);
+          rastro(function (r) { r.secao(nome); });
+        }
+      });
+    }, { threshold: 0.35 });
+    blocos.forEach(function (b) { var el = document.querySelector(b[0]); if (el) { el.setAttribute('data-bloco', b[1]); obs.observe(el); } });
+  })();
 
   // trilhos que deslizam sozinhos e continuam arrastaveis
   function deslizar(id) {

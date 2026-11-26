@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Funil do Quiz · Miçanga</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+  :root{--bg:#F6F3EE;--card:#fff;--tinta:#1F2A31;--cinza:#5F7079;--linha:#E8E0D6;--trilho:#EFE8DF;
+    --barra:#12707C;--barra2:#7CC4CC;--perda:#C62828;--perda-fundo:#FDECEC;--ok:#1B7F4C;--alerta:#A86A00;--alerta-fundo:#FFF4DC}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#14191C;--card:#1D2428;--tinta:#E8EDF0;--cinza:#9AA9B1;--linha:#2C363B;--trilho:#273035;
+    --barra:#3FB6C4;--barra2:#1E6B74;--perda:#FF7A7A;--perda-fundo:#3A1F21;--ok:#5FD39A;--alerta:#F2B544;--alerta-fundo:#3A2F14}}
+  :root[data-theme="dark"]{--bg:#14191C;--card:#1D2428;--tinta:#E8EDF0;--cinza:#9AA9B1;--linha:#2C363B;--trilho:#273035;
+    --barra:#3FB6C4;--barra2:#1E6B74;--perda:#FF7A7A;--perda-fundo:#3A1F21;--ok:#5FD39A;--alerta:#F2B544;--alerta-fundo:#3A2F14}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--tinta);font:15px/1.45 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px;margin:0 auto;padding:22px 16px 60px}
+  header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+  h1{font-size:22px;font-weight:800;letter-spacing:-.3px}
+  h1 small{display:block;font-size:13px;font-weight:500;color:var(--cinza);letter-spacing:0}
+  .filtros{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .seg{display:inline-flex;background:var(--card);border:1px solid var(--linha);border-radius:10px;padding:3px}
+  .seg button{border:0;background:none;color:var(--cinza);font:600 13px Inter,system-ui;padding:6px 10px;border-radius:7px;cursor:pointer}
+  .seg button.on{background:var(--tinta);color:var(--bg)}
+  select{background:var(--card);color:var(--tinta);border:1px solid var(--linha);border-radius:10px;padding:8px 10px;font:600 13px Inter,system-ui}
+  .atualizado{font-size:12.5px;color:var(--cinza)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:18px}
+  .kpi{background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:14px}
+  .kpi span{display:block;font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--cinza)}
+  .kpi b{display:block;font-size:30px;font-weight:800;letter-spacing:-.5px;margin-top:4px;font-variant-numeric:tabular-nums}
+  .kpi small{font-size:12.5px;color:var(--cinza)}
+  .card{background:var(--card);border:1px solid var(--linha);border-radius:16px;padding:18px;margin-top:14px}
+  .card h2{font-size:16px;font-weight:800}
+  .card .sub{font-size:13px;color:var(--cinza);margin-top:2px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:820px){.grid2{grid-template-columns:1fr}}
+  .vaz{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}
+  .vz{background:var(--perda-fundo);border-radius:12px;padding:12px 14px}
+  .vz .t{font-size:12.5px;color:var(--cinza)}
+  .vz b{display:block;font-size:15px;margin:2px 0}
+  .vz .n{font-size:22px;font-weight:800;color:var(--perda);font-variant-numeric:tabular-nums}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-variant-numeric:tabular-nums}
+  th{font-size:11.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--cinza);text-align:left;padding:6px 8px;border-bottom:1px solid var(--linha)}
+  td{padding:7px 8px;border-bottom:1px solid var(--linha);font-size:14px;vertical-align:middle}
+  td.num,th.num{text-align:right;white-space:nowrap}
+  tr:last-child td{border-bottom:0}
+  .barra{position:relative;height:18px;background:var(--trilho);border-radius:4px;min-width:90px}
+  .barra i{position:absolute;left:0;top:0;bottom:0;background:var(--barra);border-radius:0 4px 4px 0}
+  .barra em{position:absolute;right:6px;top:0;font-style:normal;font-size:11.5px;font-weight:700;line-height:18px;color:var(--tinta)}
+  .perda{color:var(--perda);font-weight:700}
+  .perda.leve{color:var(--cinza);font-weight:600}
+  .etq{font-weight:600}
+  .etq small{display:block;font-weight:500;color:var(--cinza);font-size:12px}
+  .resp{margin-top:14px}
+  .resp h3{font-size:13.5px;font-weight:700;margin-bottom:6px}
+  .resp .l{display:grid;grid-template-columns:minmax(120px,40%) 1fr 44px;gap:8px;align-items:center;font-size:13px;margin-top:4px}
+  .resp .l .barra{height:14px}
+  .resp .l .pc{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+  .aviso{background:var(--alerta-fundo);color:var(--alerta);border-radius:12px;padding:12px 14px;margin-top:14px;font-size:14px}
+  .erro{background:var(--perda-fundo);color:var(--perda);border-radius:12px;padding:12px 14px;margin-top:14px}
+  .tbl-scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Funil do quiz · Miçanga<small>onde a gente perde gente, etapa por etapa (Supabase, ao vivo)</small></h1>
+    <div class="filtros">
+      <div class="seg" id="periodo">
+        <button data-d="0" class="on">Hoje</button><button data-d="-1">Ontem</button><button data-d="3">3 dias</button><button data-d="7">7 dias</button><button data-d="30">30 dias</button>
+      </div>
+      <select id="quiz">
+        <option value="micangasdajuh">OF 1 · micangasdajuh</option>
+        <option value="brincos">OF 11 · cópia do Lipe</option>
+      </select>
+      <span class="atualizado" id="atualizado">carregando…</span>
+    </div>
+  </header>
+
+  <div id="msg"></div>
+  <div class="kpis" id="kpis"></div>
+
+  <div class="card">
+    <h2>Onde estamos perdendo mais gente</h2>
+    <p class="sub">As 3 passagens de uma tela para a outra com mais gente indo embora.</p>
+    <div class="vaz" id="vazamentos"></div>
+  </div>
+
+  <div class="card">
+    <h2>Funil, tela por tela</h2>
+    <p class="sub">Pessoas que chegaram em cada tela, quanto isso é de quem abriu, quantas saíram em relação à tela anterior e quanto tempo ficam nela (mediana).</p>
+    <div class="tbl-scroll"><table id="funil"></table></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>Até onde rolam na TSL</h2>
+      <p class="sub">De quem viu o resultado, quantos % chegaram em cada bloco.</p>
+      <table id="secoes"></table>
+    </div>
+    <div class="card">
+      <h2>Cliques no checkout</h2>
+      <p class="sub">Plano clicado (pessoas únicas).</p>
+      <table id="planos"></table>
+      <h2 style="margin-top:20px">Por dia</h2>
+      <table id="dias"></table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Por criativo</h2>
+    <p class="sub">Pelo utm_content. Criativo que traz gente que larga no começo atrai o público errado.</p>
+    <div class="tbl-scroll"><table id="criativos"></table></div>
+  </div>
+
+  <div class="card">
+    <h2>O que estão respondendo</h2>
+    <div class="grid2" id="respostas"></div>
+  </div>
+</div>
+
+<script>
+// Painel do funil. A chave NAO fica no arquivo (o site e publico): entra uma vez por ?k=... ou pelo campo, e fica so neste navegador.
+window.PAINEL = { url: "https://pdsnjmdgvwfomuvbjtiw.supabase.co/rest/v1/rpc/painel_micanga", apikey: "sb_publishable_7-wFMFY5icwU7XqLuCvrNw_XiXVTbzn", chave: "" };
+(function () {
+  var q = new URLSearchParams(location.search), k = q.get("k");
+  try { if (k) { localStorage.setItem("painel_chave", k); history.replaceState(null, "", location.pathname); } PAINEL.chave = localStorage.getItem("painel_chave") || ""; } catch (e) { PAINEL.chave = k || ""; }
+})();
+</script>
+<script>
+(function () {
+  var ROT = {
+    abertura: ['Abertura', 'capa do quiz'], experiencia: ['P1 · Já tentou?', 'pergunta 1'], trava: ['P2 · "Não é para mim"', 'pergunta 2'],
+    objetivo: ['P3 · Objetivo', 'pergunta 3'], desenho: ['P4 · Primeiro brinco', 'pergunta com foto'], tempo: ['P5 · Tempo por dia', 'pergunta 5'],
+    orcamento: ['P6 · Orçamento', 'pergunta 6'], aprender: ['P7 · Como aprende', 'pergunta 7'], nome: ['Nome', 'como posso te chamar'],
+    carrega: ['Carregando', 'montando o plano'], info1: ['Precisa de dom?', 'tela do gráfico'], info2: ['O material é caro?', 'prints da Shopee'],
+    info3: ['Alunas', 'carrossel de prints'], resultado: ['TSL', 'resultado + oferta']
+  };
+  var RESP = {
+    experiencia: { nunca: 'Nunca, seria a 1ª vez', pulseira: 'Já fiz pulseira/colar', travou: 'Tentei e travei', faz: 'Já faço' },
+    trava: { nunca: 'Nunca fiz nada parecido', dificil: 'Parece difícil demais', material: 'Não sei que material', caseiro: 'Cara de feito em casa', dom: 'Não tenho dom' },
+    objetivo: { usar: 'Usar', presentear: 'Presentear', vender: 'Vender', relaxar: 'Relaxar' },
+    desenho: { arara: 'Arara', onca: 'Onça', borboleta: 'Borboleta', tucano: 'Tucano', indigena: 'Geométrico', brasil: 'Brasil' },
+    tempo: { muito: 'Bastante', medio: '1 a 3 h', pouco: 'Só à noite' },
+    orcamento: { '20': 'Até R$ 20', '50': 'R$ 20 a 50', '100': 'R$ 50 a 100', mais: 'Mais de R$ 100' },
+    aprender: { folha: 'Desenho na frente', video: 'Vídeo', aovivo: 'Vendo alguém fazer' },
+    nome: { preencheu: 'Preencheu', pulou: 'Pulou' }
+  };
+  var SEC = { resultado: 'Resultado', dores: 'Dores', mecanismo: 'Igual ponto-cruz', desejo: '"Onde você comprou?"', produto: 'A coleção (100/15/7)',
+    amostras: 'Páginas de amostra', niveis: 'Níveis', objecoes: '"Mas e se eu…"', vender: 'Quem quiser vender', bonus: '6 bônus',
+    oferta: 'PREÇO / planos', garantia: 'Garantia', faq: 'Perguntas', fim: 'Fim da página' };
+  var $ = function (id) { return document.getElementById(id); };
+  var pct = function (a, b) { return b ? Math.round(a / b * 1000) / 10 : 0; };
+  var fmt = function (n) { return (n || 0).toLocaleString('pt-BR'); };
+  var esc = function (s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; };
+  var dias = 0, quiz = 'micangasdajuh';
+  function datas() {
+    var hoje = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+    var f = function (d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+    var ini = new Date(hoje), fim = new Date(hoje);
+    if (dias === -1) { ini.setDate(ini.getDate() - 1); fim.setDate(fim.getDate() - 1); }
+    else if (dias > 0) ini.setDate(ini.getDate() - (dias - 1));
+    return [f(ini), f(fim)];
+  }
+  function barra(v, max, rot, titulo) {
+    var w = max ? Math.max(0, Math.min(100, v / max * 100)) : 0;
+    return '<div class="barra" title="' + esc(titulo || '') + '"><i style="width:' + w + '%"></i><em>' + esc(rot) + '</em></div>';
+  }
+  function carregar() {
+    var dt = datas();
+    $('atualizado').textContent = 'carregando…';
+    fetch(PAINEL.url, { method: 'POST', headers: { apikey: PAINEL.apikey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_chave: PAINEL.chave, p_ini: dt[0], p_fim: dt[1], p_quiz: quiz }) })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.message || r.status); return j; }); })
+      .then(function (d) { $('msg').innerHTML = ''; desenhar(d, dt); $('atualizado').textContent = 'atualizado às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ' · ' + dt[0].split('-').reverse().slice(0, 2).join('/') + (dt[0] !== dt[1] ? ' a ' + dt[1].split('-').reverse().slice(0, 2).join('/') : ''); })
+      .catch(function (e) { if (/chave/.test(e.message)) { try { localStorage.removeItem('painel_chave'); } catch (x) {} } $('msg').innerHTML = '<div class="erro">Não consegui ler o Supabase: ' + esc(e.message) + '</div>'; $('atualizado').textContent = 'erro'; });
+  }
+  function desenhar(d, dt) {
+    var funil = d.funil || [], abriram = d.abriram || 0;
+    var ate = function (et) { var x = funil.find(function (f) { return f.etapa === et; }); return x ? x.pessoas : 0; };
+    if (!abriram) $('msg').innerHTML = '<div class="aviso">Ainda não tem visita neste período. O rastreio do quiz entrou no ar em 26/11 à noite.</div>';
+    var p1 = ate('experiencia'), fimPerg = ate('info1'), tsl = ate('resultado');
+    $('kpis').innerHTML = [
+      ['Abriram o quiz', abriram, ''],
+      ['Começaram', p1, pct(p1, abriram) + '% de quem abriu'],
+      ['Terminaram as perguntas', fimPerg, pct(fimPerg, abriram) + '% de quem abriu'],
+      ['Viram a TSL', tsl, pct(tsl, abriram) + '% de quem abriu'],
+      ['Clicaram no checkout', d.checkout || 0, pct(d.checkout, tsl) + '% de quem viu a TSL']
+    ].map(function (k) { return '<div class="kpi"><span>' + k[0] + '</span><b>' + fmt(k[1]) + '</b><small>' + k[2] + '</small></div>'; }).join('');
+
+    // funil
+    var linhas = '<tr><th>Tela</th><th class="num">Pessoas</th><th style="width:34%">% de quem abriu</th><th class="num">Saíram da anterior</th><th class="num">Tempo na tela</th></tr>';
+    var perdas = [];
+    funil.forEach(function (f, i) {
+      var r = ROT[f.etapa] || [f.etapa, ''];
+      var ant = i ? funil[i - 1].pessoas : null, perdeu = ant != null ? ant - f.pessoas : null, pp = ant ? pct(perdeu, ant) : null;
+      if (perdeu > 0) perdas.push({ de: funil[i - 1].etapa, para: f.etapa, n: perdeu, p: pp, base: ant });
+      linhas += '<tr><td class="etq">' + esc(r[0]) + '<small>' + esc(r[1]) + '</small></td><td class="num">' + fmt(f.pessoas) + '</td><td>' +
+        barra(f.pessoas, abriram, pct(f.pessoas, abriram) + '%', f.pessoas + ' de ' + abriram + ' pessoas') + '</td><td class="num">' +
+        (perdeu == null ? '–' : '<span class="perda' + (pp < 8 ? ' leve' : '') + '">' + (perdeu > 0 ? '▼ ' : '') + fmt(perdeu) + ' (' + pp + '%)</span>') + '</td><td class="num">' +
+        (f.seg == null ? '–' : f.seg + ' s') + '</td></tr>';
+    });
+    $('funil').innerHTML = linhas;
+    perdas.sort(function (a, b) { return b.n - a.n; });
+    $('vazamentos').innerHTML = perdas.slice(0, 3).map(function (v) {
+      return '<div class="vz"><span class="t">▼ de ' + esc((ROT[v.de] || [v.de])[0]) + ' para</span><b>' + esc((ROT[v.para] || [v.para])[0]) + '</b><span class="n">' + fmt(v.n) + ' pessoas</span><span class="t"> · ' + v.p + '% de quem estava na tela anterior</span></div>';
+    }).join('') || '<p class="sub">Sem dados ainda.</p>';
+
+    // secoes da TSL
+    var sec = d.secoes || [], base = tsl || 1;
+    $('secoes').innerHTML = '<tr><th>Bloco</th><th style="width:55%">Chegaram</th></tr>' + (sec.length ? sec.map(function (s) {
+      return '<tr><td class="etq">' + esc(SEC[s.secao] || s.secao) + '</td><td>' + barra(s.n, base, pct(s.n, base) + '% · ' + s.n, s.n + ' pessoas') + '</td></tr>';
+    }).join('') : '<tr><td colspan="2" class="sub">Sem dados.</td></tr>');
+
+    var pl = d.planos || {};
+    $('planos').innerHTML = '<tr><th>Plano</th><th class="num">Pessoas</th></tr>' +
+      '<tr><td>Completa · R$ 27,90</td><td class="num">' + fmt(pl.completo || 0) + '</td></tr>' +
+      '<tr><td>Essencial · R$ 17,90</td><td class="num">' + fmt(pl.essencial || 0) + '</td></tr>';
+    $('dias').innerHTML = '<tr><th>Dia</th><th class="num">Abriram</th><th class="num">TSL</th><th class="num">Checkout</th></tr>' + (d.dias || []).map(function (x) {
+      return '<tr><td>' + x.dia.split('-').reverse().slice(0, 2).join('/') + '</td><td class="num">' + fmt(x.abriram) + '</td><td class="num">' + fmt(x.resultado) + '</td><td class="num">' + fmt(x.checkout) + '</td></tr>';
+    }).join('');
+
+    var cr = d.criativos || [];
+    $('criativos').innerHTML = '<tr><th>Criativo</th><th class="num">Abriram</th><th class="num">Terminaram perguntas</th><th class="num">Viram TSL</th><th class="num">Checkout</th><th class="num">Checkout / abriu</th></tr>' +
+      (cr.length ? cr.map(function (c) {
+        return '<tr><td>' + esc(c.criativo) + '</td><td class="num">' + fmt(c.abriram) + '</td><td class="num">' + fmt(c.terminou_perguntas) + ' <span class="sub">(' + pct(c.terminou_perguntas, c.abriram) + '%)</span></td><td class="num">' +
+          fmt(c.resultado) + ' <span class="sub">(' + pct(c.resultado, c.abriram) + '%)</span></td><td class="num">' + fmt(c.checkout) + '</td><td class="num">' + pct(c.checkout, c.abriram) + '%</td></tr>';
+      }).join('') : '<tr><td colspan="6" class="sub">Sem dados.</td></tr>');
+
+    // respostas
+    var por = {};
+    (d.respostas || []).forEach(function (r) { (por[r.etapa] = por[r.etapa] || []).push(r); });
+    $('respostas').innerHTML = Object.keys(RESP).filter(function (k) { return por[k]; }).map(function (k) {
+      var tot = por[k].reduce(function (s, r) { return s + r.n; }, 0);
+      return '<div class="resp"><h3>' + esc((ROT[k] || [k])[0]) + ' <span class="sub">· ' + tot + ' respostas</span></h3>' + por[k].map(function (r) {
+        return '<div class="l"><span>' + esc(RESP[k][r.resposta] || r.resposta) + '</span>' + barra(r.n, tot, '', r.n + ' pessoas') + '<span class="pc">' + pct(r.n, tot) + '%</span></div>';
+      }).join('') + '</div>';
+    }).join('') || '<p class="sub">Sem dados.</p>';
+  }
+  document.querySelectorAll('#periodo button').forEach(function (b) {
+    b.onclick = function () { document.querySelectorAll('#periodo button').forEach(function (x) { x.classList.toggle('on', x === b); }); dias = +b.dataset.d; carregar(); };
+  });
+  $('quiz').onchange = function () { quiz = this.value; carregar(); };
+  if (!PAINEL.chave) {
+    $("msg").innerHTML = "<div class=\"aviso\"><b>Digite a chave do painel</b><br><input id=\"ch\" type=\"password\" style=\"margin-top:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--linha);font:inherit;width:220px\"> <button id=\"chok\" style=\"padding:8px 14px;border-radius:8px;border:0;background:var(--tinta);color:var(--bg);font:700 13px Inter,system-ui;cursor:pointer\">Entrar</button></div>";
+    $("atualizado").textContent = "sem chave";
+    $("chok").onclick = function () { var v = $("ch").value.trim(); if (!v) return; try { localStorage.setItem("painel_chave", v); } catch (e) {} PAINEL.chave = v; carregar(); setInterval(carregar, 60000); };
+  } else { carregar(); setInterval(carregar, 60000); }
+})();
+</script>
+</body>
+</html>
